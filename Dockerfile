@@ -1,21 +1,10 @@
-FROM python:3.6-alpine
+FROM ubuntu:latest
+ENV FLASK_APP=hello.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
-ENV FLASK_APP flasky.py
-ENV FLASK_CONFIG production
-
-RUN adduser -D flasky
-USER flasky
-
-WORKDIR /home/flasky
-
-COPY requirements requirements
-RUN python -m venv venv
-RUN venv/bin/pip install -r requirements/docker.txt
-
-COPY app app
-COPY migrations migrations
-COPY flasky.py config.py boot.sh ./
-
-# run-time configuration
-EXPOSE 5000
-ENTRYPOINT ["./boot.sh"]
+RUN apt-get update -y
+RUN apt-get install -y python3-pip python3-dev build-essential
+COPY . /app
+WORKDIR /app
+RUN pip install --break-system-packages -r requirements.txt
+CMD ["flask", "run"]
