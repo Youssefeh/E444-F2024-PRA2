@@ -16,7 +16,7 @@ def validateEmail(form, field):
     if '@' not in field.data.lower():
         raise ValidationError(f'Please include an \'@\' in the email address. \'{field.data.lower()}\' is missing an \'@\'')
     elif 'mail.utoronto.ca' not in field.data.lower():
-        raise ValidationError(f'Please enter a valid UofT email address. \'{field.data.lower()}\' is missing \'mail.utoronto.ca\'')
+        flash(f'Please enter a valid UofT email address next time.')
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
