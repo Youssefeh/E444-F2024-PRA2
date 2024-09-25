@@ -5,15 +5,22 @@ from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from wtforms import ValidationError
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 app.config['SECRET_KEY'] = 'YOU'
 
+def validateEmail(form, field):
+    if '@' not in field.data.lower():
+        raise ValidationError(f'Please include an \'@\' in the email address. \'{field.data.lower()}\' is missing an \'@\'')
+    elif 'mail.utoronto.ca' not in field.data.lower():
+        raise ValidationError(f'Please enter a valid UofT email address. \'{field.data.lower()}\' is missing \'mail.utoronto.ca\'')
+
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
-    email = StringField('What is your UofT email?', validators=[DataRequired()])
+    email = StringField('What is your UofT email?', validators=[DataRequired(), validateEmail])
     submit = SubmitField('Submit')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -27,8 +34,13 @@ def index():
         session['name'] = form.name.data
 
         # Email handling
+        old_email = session.get('email')
+        if old_email is not None and old_email != form.email.data:
+            flash('Updated to new Email!')
+        session['email'] = form.email.data
+
         return redirect(url_for('index'))
-    return render_template('index.html', current_time=datetime.utcnow(), form=form, name=session.get('name'))
+    return render_template('index.html', current_time=datetime.utcnow(), form=form, name=session.get('name'), email=session.get('email'))
 
 @app.route('/user/<name>')
 def user(name):
